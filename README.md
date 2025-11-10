@@ -2,6 +2,8 @@
 
 Creates a small VM to act as an IAP proxy server for Cloud SQL, allowing access to authorized GCP users outside the private network without publicly exposing the database.
 
+NOTE: This module requires that you [enable IAM auth on your Cloud SQL instance.](https://docs.cloud.google.com/sql/docs/mysql/iam-authentication)
+
 The VM is provisioned with:
 * No public IP address.
 * A startup script to download, install, and run the Cloud SQL Proxy as a `systemd` service.
