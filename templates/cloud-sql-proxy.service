@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 User=cloudsqlproxy
-ExecStart=/usr/local/bin/cloud-sql-proxy --address "0.0.0.0" ${PROXY_ARGS}
+ExecStart=/usr/local/bin/cloud-sql-proxy ${PROXY_ARGS}
 Restart=always
 
 [Install]

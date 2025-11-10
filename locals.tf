@@ -2,12 +2,12 @@ locals {
   # Creates a prefix like "prod-" if var.name_prefix is "prod", or "" if var.name_prefix is null or empty.
   prefix = var.name_prefix == null || var.name_prefix == "" ? "" : "${var.name_prefix}-"
 
-  # Create a list of full connection strings, e.g., ["project:region:db1", "project:region:db2"]
-  sql_instance_port_map_strings = [
+
+  # Build the final, complete argument string for the systemd service
+  # It will look like: "--address 0.0.0.0 --iam-authn --port 3306 project:region:db1 --port 3307 project:region:db2"
+  sql_proxy_exec_args = "--address 0.0.0.0 --iam-authn ${join(" ", [
     for instance in var.cloud_sql_instances : "--port ${instance.port} ${data.google_client_config.this.project}:${data.google_client_config.this.region}:${instance.name}"
-  ]
-  # Join that list into a single, space-separated string for the systemd service
-  sql_proxy_exec_args = join(" ", local.sql_instance_port_map_strings)
+  ])}"
 
   database_ports = distinct([
     for instance in var.cloud_sql_instances : instance.port
