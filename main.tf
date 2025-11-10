@@ -1,10 +1,15 @@
+locals {
+  # Creates a prefix like "prod-" if var.name_prefix is "prod", or "" if var.name_prefix is null or empty.
+  prefix = var.name_prefix == null || var.name_prefix == "" ? "" : "${var.name_prefix}-"
+}
+
 ###############
 # Proxy VM & Networking 
 ###############
 
 resource "google_compute_instance" "iap_bastion_host" {
   project      = data.google_client_config.this.project
-  name         = var.instance_name
+  name         = "${local.prefix}${var.instance_name}"
   machine_type = var.machine_type
   # This uses the region from your gcloud/provider config to build the zone
   zone = "${data.google_client_config.this.region}-a"
@@ -76,7 +81,7 @@ tags = [var.iap_ssh_tag]
 
 resource "google_compute_firewall" "allow_iap" {
   project   = data.google_client_config.this.project
-  name      = var.firewall_name
+  name      = "${local.prefix}${var.firewall_name}"
   network   = var.network_name
   direction = "INGRESS"
 
@@ -102,8 +107,8 @@ resource "google_compute_firewall" "allow_iap" {
 
 resource "google_service_account" "sql_iap_sa" {
   project      = data.google_client_config.this.project
-  account_id   = var.service_account_id
-  display_name = var.service_account_display_name
+  account_id   = "${local.prefix}${var.service_account_id}"
+  display_name = "${local.prefix}${var.service_account_display_name}"
 }
 
 resource "google_project_iam_member" "sql_iap_sa_role" {

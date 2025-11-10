@@ -34,6 +34,12 @@ variable "firewall_allow_database_port" {
 # These variables have default values but can be overridden.
 # ------------------------------------------------------------------------------
 
+variable "name_prefix" {
+  description = "Prefix to add to all resource names."
+  type        = string
+  default     = ""
+}
+
 variable "machine_type" {
   description = "Machine type for the IAP bastion host."
   type        = string

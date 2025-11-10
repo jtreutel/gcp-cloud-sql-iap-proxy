@@ -50,6 +50,7 @@ module "sql_bastion_custom" {
   firewall_allow_database_port = "5432" # Postgres default
 
   # --- Optional ---
+  name_prefix                  = "dev-"
   instance_name                = "stg-sql-bastion"
   machine_type                 = "e2-small"
   boot_image                   = "ubuntu-os-cloud/ubuntu-2404-lts"
