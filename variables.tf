@@ -9,11 +9,6 @@ variable "instance_name" {
   default     = "iap-bastion-host"
 }
 
-variable "sql_instance_name" {
-  description = "The name (ID) of the Cloud SQL instance to connect to. Project and region are detected automatically."
-  type        = string
-}
-
 variable "network_name" {
   description = "The name of the VPC network to attach the VM to."
   type        = string
@@ -24,10 +19,32 @@ variable "subnetwork_self_link" {
   type        = string
 }
 
-variable "firewall_allow_database_port" {
-  description = "Port on which the target Cloud SQL instance is listening. MySQL default is 3306. Postgres default is 5432. SQL Server default is 1433."
-  type        = string
+variable "cloud_sql_instances" {
+  description = "List of Cloud SQL instances. Each entry should be the instance name and an arbitrary port to expose via the proxy for that instance."
+  type = list(object({
+    name = string
+    port = string
+  }))
 }
+
+/*
+Example:
+
+sql_instances = [
+  {
+    name = "my-mysql-db"
+    port = "33060"
+  },
+  {
+    name = "my-other-mysql-db"
+    port = "33061" 
+  }
+  {
+    name = "my-postgres-db"
+    port = "5432"
+  },
+]
+*/
 
 # ------------------------------------------------------------------------------
 # OPTIONAL VARIABLES

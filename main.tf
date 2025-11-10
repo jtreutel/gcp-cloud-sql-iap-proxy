@@ -1,8 +1,3 @@
-locals {
-  # Creates a prefix like "prod-" if var.name_prefix is "prod", or "" if var.name_prefix is null or empty.
-  prefix = var.name_prefix == null || var.name_prefix == "" ? "" : "${var.name_prefix}-"
-}
-
 ###############
 # Proxy VM & Networking 
 ###############
@@ -45,7 +40,7 @@ resource "google_compute_instance" "iap_bastion_host" {
     echo "Creating systemd service file..."
     cat <<EOF > /etc/systemd/system/cloud-sql-proxy.service
 ${templatefile("${path.module}/templates/cloud-sql-proxy.service", {
-  INSTANCE_CONNECTION_NAME = local.sql_instance_connection_name
+  PROXY_ARGS = local.sql_proxy_exec_args
 })}
 EOF
 
@@ -89,7 +84,7 @@ resource "google_compute_firewall" "allow_iap" {
     protocol = "tcp"
     ports = concat(
       ["22"], # Required for IAP to work
-      [var.firewall_allow_database_port],
+      local.database_ports,
       var.firewall_additional_ports
     )
   }
