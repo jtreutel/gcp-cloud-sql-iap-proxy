@@ -84,7 +84,7 @@ resource "google_compute_firewall" "allow_iap" {
     protocol = "tcp"
     ports = concat(
       ["22"], # Required for IAP to work
-      local.database_ports,
+      local.proxy_listening_ports,
       var.firewall_additional_ports
     )
   }

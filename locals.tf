@@ -4,13 +4,16 @@ locals {
 
 
   # Build the final, complete argument string for the systemd service
-  # It will look like: "--address 0.0.0.0 --iam-authn --port 3306 project:region:db1 --port 3307 project:region:db2"
-  sql_proxy_exec_args = "--address 0.0.0.0 --private-ip ${join(" ", [
-    for instance in var.cloud_sql_instances : "--port ${instance.port} ${data.google_client_config.this.project}:${data.google_client_config.this.region}:${instance.name}"
-  ])}"
+  # It will look like: "instance1 instance2 --port 50000 --address 0.0.0.0 --private-ip"
+  sql_proxy_exec_args = "${join(" ", [
+    for name in var.cloud_sql_instances : "${data.google_client_config.this.project}:${data.google_client_config.this.region}:${name}"
+    ]
+    )
+  } --port ${var.starting_port} --address 0.0.0.0 --private-ip"
 
-  database_ports = distinct([
-    for instance in var.cloud_sql_instances : instance.port
-  ])
+  # List of database ports to open in the firewall
+  proxy_listening_ports = [
+    for i, instance in var.cloud_sql_instances : var.starting_port + i
+  ]
 }
 

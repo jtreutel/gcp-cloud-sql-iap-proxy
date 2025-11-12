@@ -20,11 +20,12 @@ variable "subnetwork_self_link" {
 }
 
 variable "cloud_sql_instances" {
-  description = "List of Cloud SQL instances. Each entry should be the instance name and an arbitrary port to expose via the proxy for that instance."
-  type = list(object({
-    name = string
-    port = string
-  }))
+  description = "List of Cloud SQL instances names."
+  type        = list(string)
+}
+
+variable "starting_port" {
+  description = "The starting listening port number for mapping Cloud SQL instances. If you have more than one instance, subsequent instances will use incremented port numbers."
 }
 
 /*

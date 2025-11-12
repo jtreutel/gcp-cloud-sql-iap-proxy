@@ -5,9 +5,17 @@ output "ssh_command" {
 }
 
 output "sql_proxy_tunnel_commands" {
-  description = "A map of commands to start IAP tunnels for each database port."
+  description = "A map of instance names to the gcloud commands to start their IAP tunnels."
   value = {
-    for port in local.database_ports : "port_${port}" => "gcloud compute start-iap-tunnel ${google_compute_instance.iap_bastion_host.name} ${port} --local-host-port=localhost:${port} --zone ${google_compute_instance.iap_bastion_host.zone} --project ${data.google_client_config.this.project}"
+    for i, name in var.cloud_sql_instances :
+    name => "gcloud compute start-iap-tunnel ${google_compute_instance.iap_bastion_host.name} ${local.proxy_listening_ports[i]} --local-host-port=localhost:${local.proxy_listening_ports[i]} --zone ${google_compute_instance.iap_bastion_host.zone} --project ${data.google_client_config.this.project}"
   }
   sensitive = false
+}
+
+output "instance_port_assignments" {
+  description = "A map of Cloud SQL instance names to their assigned local proxy ports."
+  value = {
+    for i, name in var.cloud_sql_instances : name => (var.starting_port + i)
+  }
 }
