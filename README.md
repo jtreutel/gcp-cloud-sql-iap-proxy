@@ -1,16 +1,23 @@
 # gcp-cloud-sql-iap-proxy
 
-Creates a small VM to act as an IAP proxy server for Cloud SQL, allowing access to authorized GCP users outside the private network without publicly exposing the database.
+Creates a small VM to act as an IAP proxy server for Cloud SQL, allowing access to authorized GCP users outside the private network without publicly exposing the database.  The cloud-sql-proxy process on the VM acts as a passthrough for client-side IAM auth, meaning that it preserves the identity of the IAM user in audit logging.
 
-NOTE: This module requires that you [enable IAM auth on your Cloud SQL instance.](https://docs.cloud.google.com/sql/docs/mysql/iam-authentication)
+NOTE: This module requires that you [enable IAM auth on your Cloud SQL instance.](https://docs.cloud.google.com/sql/docs/mysql/iam-authentication). Your user MUST have both `roles/cloudsql.client` and `roles/cloudsql.instanceUser` to connect with IAM.
 
-The VM is provisioned with:
-* No public IP address.
-* A startup script to download, install, and run the Cloud SQL Proxy as a `systemd` service.
-* A dedicated service account with the `roles/cloudsql.client` role.
-* A firewall rule that allows SSH (port 22) and the specified database port *only* from Google's IAP service.
 
-## Usage Examples
+### How to Connect
+
+1. Ensure that your IAM user has the required Cloud SQL permission and has been added to the target DB as an IAM user.  Note your Cloud SQL instance IAM user username, as it will be different than your GCP IAM priniciple name (e.g. `foobar` instead of `foobar@domain.com`)
+2. Create an IAP tunnel to the proxy VM by running the command for your target database provided by `output.sql_proxy_tunnel_commands`
+3. Run `gcloud auth print-access-token` and copy the token.
+4. Log in with the following settings:
+  - Host: `localhost`
+  - Username: `<your Cloud SQL instance IAM user username>`
+  - Password: `<your token>`
+  - Port: `<target instance port exposed by cloud-sql-proxy`>
+  - Enable cleartext plugin: `true`
+
+## Module Usage Examples
 
 ### Minimal Example (Required Variables Only)
 
@@ -25,7 +32,12 @@ data "google_compute_subnetwork" "my_subnetwork" {
 module "sql_bastion" {
   source = "github.com/jtreutel/gcp-cloud-sql-iap-proxy?ref=vX.Y.Z" #Replace with actual tag
 
-  sql_instance_name            = "prod-db-main"
+  cloud_sql_instances          = [
+    {
+      name = "my-mysql-db"
+      port = "3306"
+    }
+  ]
   network_name                 = "my-production-vpc"
   subnetwork_self_link         = data.google_compute_subnetwork.my_subnetwork.self_link
   firewall_allow_database_port = "3306" # MySQL default
@@ -46,7 +58,20 @@ module "sql_bastion_custom" {
   source = "github.com/jtreutel/gcp-cloud-sql-iap-proxy?ref=vX.Y.Z" #Replace with actual tag
 
   # --- Required ---
-  sql_instance_name            = "stg-db-main"
+  cloud_sql_instances          = [
+    {
+      name = "my-mysql-db"
+      port = "33060"
+    },
+    {
+      name = "my-other-mysql-db"
+      port = "33061" 
+    }
+    {
+      name = "my-postgres-db"
+      port = "5432"
+    },
+  ]
   network_name                 = "my-staging-vpc"
   subnetwork_self_link         = data.google_compute_subnetwork.my_subnetwork.self_link
   firewall_allow_database_port = "5432" # Postgres default
@@ -126,6 +151,3 @@ After running `terraform apply`, you can use the commands from the `outputs` to 
 | :--- | :--- |
 | `ssh_command` | Command to SSH into the bastion host using IAP. |
 | `sql_proxy_tunnel_command` | Command to start an IAP tunnel to the bastion host for the Cloud SQL Proxy (local port matches `var.firewall_allow_database_port`). |
-
-```
-```
