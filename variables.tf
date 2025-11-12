@@ -28,25 +28,6 @@ variable "starting_port" {
   description = "The starting listening port number for mapping Cloud SQL instances. If you have more than one instance, subsequent instances will use incremented port numbers."
 }
 
-/*
-Example:
-
-sql_instances = [
-  {
-    name = "my-mysql-db"
-    port = "33060"
-  },
-  {
-    name = "my-other-mysql-db"
-    port = "33061" 
-  }
-  {
-    name = "my-postgres-db"
-    port = "5432"
-  },
-]
-*/
-
 # ------------------------------------------------------------------------------
 # OPTIONAL VARIABLES
 # These variables have default values but can be overridden.
