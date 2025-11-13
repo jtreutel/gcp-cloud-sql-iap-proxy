@@ -120,6 +120,17 @@ module "sql_bastion_custom" {
 
 -----
 
+## Architecture Digram
+
+1. [Orange] cloud-sql-proxy server
+2. [Green] IAP tunnel creation
+3. [Red] User database connection
+4. [Blue] Identity flow
+
+![Architecture overview](images/iam-proxy-vm.svg)
+
+-----
+
 ## Inputs
 
 ### Required
